@@ -1,0 +1,9 @@
+[package]
+name = "pack2"
+version = "0.1.0"
+authors = ["Michael Sprecher <dev@0x23.ch>"]
+edition = "2018"
+
+[dependencies]
+bstr = "0.2.12"
+hashbrown = "0.7.1"
