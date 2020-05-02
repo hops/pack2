@@ -4,20 +4,19 @@ pack2 is ment to be a replacement for iphelix's [PACK](https://github.com/ipheli
 This is a work in progress. Not all features are available and while being
 similiar some features will differ slightly.
 
-# building
 
-## requirments
+# requirements
 
 You need Rust installed. The easiest way to do so is using [rustup](https://rustup.rs).
 
-## building
+# building
 
 ```
 $ cargo build --release
 ```
-Your binary will be located at target/release/pack2 \  
+Your binary will be located at `target/release/pack2`  
 To squeeze out more compiler optimizations use the following command. This
-will result in a longer compile time in favor of running slightly faster.
+will result in a longer compile time in favor of running a bit faster.
 ```
 $ RUSTFLAGS="-C opt-level=3 -C target-cpu=native -C codegen-units=1" cargo build --release
 ```
