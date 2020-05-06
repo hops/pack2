@@ -6,4 +6,5 @@ edition = "2018"
 
 [dependencies]
 bstr = "0.2.12"
-hashbrown = "0.7.1"
+hashbrown = "0.7.2"
+faster-hex = { git = "https://github.com/ggriffiniii/faster-hex", branch = "master" }

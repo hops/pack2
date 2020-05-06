@@ -1,11 +1,12 @@
-mod common;
-
 use std::error::Error;
 use std::io::{self};
 use std::iter::FromIterator;
 
 use bstr::{ByteSlice, io::BufReadExt};
 use hashbrown::HashMap;
+use faster_hex::hex_decode;
+
+mod common;
 
 fn main() -> Result<(), Box<dyn Error>> {
 
@@ -60,47 +61,56 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut mask: Vec<u8> = Vec::new();
     let mut simple_mask: Vec<u8> = Vec::new();
 
-    stdin.lock().for_byte_line(|line| {
-        let line_len = line.len();
-        if line_len == 0 {
-            skipped += 1
-        } else {
-            if min_len > line_len { min_len = line_len }
-            if line_len > max_len { max_len = line_len }
+    for result in stdin.lock().byte_lines() {
+        let mut line = result?;
+        let mut line_len = line.len();
 
-            let mut last: u8 = 0;
-
-            let mut charset: u8 = 0;
-            let mut skip = false;
-
-            for byte in line.iter() {
-                mask.push(common::CHAR2MASK[*byte as usize]);
-                charset |= common::CHAR2BITMAP[*byte as usize];
-                let char_mapped = common::CHAR2SMASK[*byte as usize];
-                if last == 0 || (last != char_mapped && !skip) {
-                    simple_mask.push(char_mapped);
-                    last = char_mapped;
-                }
-                if simple_mask.len() > 4 {
-                    skip = true;
-                }
-            }
-
-            *masks.entry((&*mask).to_vec()).or_insert(0) += 1;
-            *length.entry(line_len as u16).or_insert(0) += 1;
-            *charsets.entry(charset).or_insert(0) += 1;
-            if skip  {
-                *simple_masks.entry(vec![255]).or_insert(0) += 1;
-            } else {
-                *simple_masks.entry((&*simple_mask).to_vec()).or_insert(0) += 1;
-            }
-
-            mask.clear();
-            simple_mask.clear();
+        if line.starts_with("$HEX[".as_bytes()) && line.ends_with("]".as_bytes()) {
+            line_len = (line_len - 6) / 2;
+            let mut hex_decoded = vec![0; line_len];
+            hex_decode(&line[5..line.len() - 1], &mut hex_decoded)?;
+            line = hex_decoded;
         }
+
+        if line_len == 0 || line_len > usize::MAX {
+            skipped += 1;
+            continue;
+        }
+
+        if min_len > line_len { min_len = line_len }
+        if line_len > max_len { max_len = line_len }
+
+        let mut last: u8 = 0;
+
+        let mut charset: u8 = 0;
+        let mut skip = false;
+
+        for byte in line.iter() {
+            mask.push(common::CHAR2MASK[*byte as usize]);
+            charset |= common::CHAR2BITMAP[*byte as usize];
+            let char_mapped = common::CHAR2SMASK[*byte as usize];
+            if last == 0 || (last != char_mapped && !skip) {
+                simple_mask.push(char_mapped);
+                last = char_mapped;
+            }
+            if simple_mask.len() > 4 {
+                skip = true;
+            }
+        }
+
+        *masks.entry((&*mask).to_vec()).or_insert(0) += 1;
+        *length.entry(line_len as u16).or_insert(0) += 1;
+        *charsets.entry(charset).or_insert(0) += 1;
+        if skip  {
+            *simple_masks.entry(vec![255]).or_insert(0) += 1;
+        } else {
+            *simple_masks.entry((&*simple_mask).to_vec()).or_insert(0) += 1;
+        }
+
+        mask.clear();
+        simple_mask.clear();
         total_lines += 1;
-        Ok(true)
-    })?;
+    }
 
     let num_lines = total_lines - skipped;
     eprintln!("[+] Analyzed {} / {} passwords.", num_lines, total_lines);
