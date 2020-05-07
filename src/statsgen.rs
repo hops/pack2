@@ -9,7 +9,7 @@ use faster_hex::hex_decode;
 
 mod common;
 
-pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>) {
+pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<char>) {
 
     let bitmap2string: Vec<&str> = vec![
         "invalid",
@@ -50,7 +50,6 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>) {
         None => Box::new(BufReader::new(io::stdin())),
         Some(filename) => Box::new(BufReader::new(File::open(filename).unwrap()))
     };
-
 
     let mut masks:        HashMap<Vec<u8>, u32> = HashMap::new();
     let mut simple_masks: HashMap<Vec<u8>, u32> = HashMap::new();
@@ -174,6 +173,11 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>) {
         Some(filename) => Box::new(BufWriter::new(File::create(filename).unwrap()))
     };
 
+    let separator: char = match separator {
+        None => '\t',
+        Some(sep) => sep
+    };
+
     for (mask, count) in freq_masks {
         let mut idx = 0;
         for c in mask {
@@ -186,7 +190,7 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>) {
             eprintln!("[+] {: >26}: {: >5.2}% ({})", out_mask, percent, count);
             top += 1;
         }
-        let out = &*format!("{},{}\n", out_mask, count);
+        let out = &*format!("{}{}{}\n", out_mask, separator, count);
         io::copy(&mut out.as_bytes(), &mut writer).unwrap();
     }
 }
