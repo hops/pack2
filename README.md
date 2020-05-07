@@ -24,10 +24,12 @@ $ RUSTFLAGS="-C opt-level=3 -C target-cpu=native -C codegen-units=1" cargo build
 # usage
 
 As of now (version 0.1.0) only statsgen is implemented. It reads a wordlist
-from `stdin`. Masks are written to `stdout` while the stats are written to
+from `stdin`. By default masks are written to `stdout` while the stats are written to
 `stderr`.
 
 ```
-$ ./target/release/pack2 < input.txt > masks.txt
+$ ./target/release/pack2 statsgen < input.txt > masks.txt
 ```
 
+You can also provide the `-o` flag to specify the output file.
+Type `pack2 help statsgen` to see all options.

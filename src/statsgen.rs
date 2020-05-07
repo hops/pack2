@@ -1,5 +1,7 @@
-use std::io::{self};
+use std::io::{self, BufRead, BufReader, Write, BufWriter};
 use std::iter::FromIterator;
+use std::fs::File;
+use std::path::PathBuf;
 
 use bstr::{ByteSlice, io::BufReadExt};
 use hashbrown::HashMap;
@@ -7,7 +9,7 @@ use faster_hex::hex_decode;
 
 mod common;
 
-pub fn gen() {
+pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>) {
 
     let bitmap2string: Vec<&str> = vec![
         "invalid",
@@ -43,8 +45,12 @@ pub fn gen() {
         "upperalphaspecialnumbin",
         "mixedalphaspecialnumbin",
     ];
-    let stdin = io::stdin();
-    let mut stdout = io::BufWriter::new(io::stdout());
+
+    let reader: Box<dyn BufRead> = match input {
+        None => Box::new(BufReader::new(io::stdin())),
+        Some(filename) => Box::new(BufReader::new(File::open(filename).unwrap()))
+    };
+
 
     let mut masks:        HashMap<Vec<u8>, u32> = HashMap::new();
     let mut simple_masks: HashMap<Vec<u8>, u32> = HashMap::new();
@@ -60,7 +66,7 @@ pub fn gen() {
     let mut mask: Vec<u8> = Vec::new();
     let mut simple_mask: Vec<u8> = Vec::new();
 
-    for result in stdin.lock().byte_lines() {
+    for result in reader.byte_lines() {
         let mut line = result.unwrap();
         let mut line_len = line.len();
 
@@ -163,6 +169,11 @@ pub fn gen() {
     let mut top = 0;
     let mut print_mask = vec!['?' as u8; max_len * 2];
 
+    let mut writer: Box<dyn Write> = match output {
+        None => Box::new(BufWriter::new(io::stdout())),
+        Some(filename) => Box::new(BufWriter::new(File::create(filename).unwrap()))
+    };
+
     for (mask, count) in freq_masks {
         let mut idx = 0;
         for c in mask {
@@ -176,6 +187,6 @@ pub fn gen() {
             top += 1;
         }
         let out = &*format!("{},{}\n", out_mask, count);
-        io::copy(&mut out.as_bytes(), &mut stdout).unwrap();
+        io::copy(&mut out.as_bytes(), &mut writer).unwrap();
     }
 }
