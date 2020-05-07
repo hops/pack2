@@ -68,8 +68,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         if line.starts_with("$HEX[".as_bytes()) && line.ends_with("]".as_bytes()) {
             line_len = (line_len - 6) / 2;
             let mut hex_decoded = vec![0; line_len];
-            hex_decode(&line[5..line.len() - 1], &mut hex_decoded)?;
-            line = hex_decoded;
+            let res = hex_decode(&line[5..line.len() - 1], &mut hex_decoded);
+            match res {
+                Ok(_)  => line = hex_decoded,
+                // not valid $HEX encoding, treat as "normal" password
+                Err(_) => line_len = line.len(),
+            }
         }
 
         if line_len == 0 || line_len > usize::MAX {
