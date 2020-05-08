@@ -9,7 +9,7 @@ use faster_hex::hex_decode;
 
 mod common;
 
-pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<char>) {
+pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<char>, min_length: u16, max_length: u16) {
 
     let bitmap2string: Vec<&str> = vec![
         "invalid",
@@ -56,10 +56,10 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
     let mut length:       HashMap<u16, u32> = HashMap::new();
     let mut charsets:     HashMap< u8, u32> = HashMap::new();
 
-    let mut total_lines: usize = 0;
-    let mut skipped:     usize = 0;
-    let mut min_len:     usize = usize::MAX;
-    let mut max_len:     usize = 0;
+    let mut processed_lines: usize = 0;
+    let mut skipped_lined:   usize = 0;
+    let mut min_len:         usize = usize::MAX;
+    let mut max_len:         usize = 0;
 
 
     let mut mask: Vec<u8> = Vec::new();
@@ -80,8 +80,8 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
             }
         }
 
-        if line_len == 0 || line_len > usize::MAX {
-            skipped += 1;
+        if line_len < min_length.into() || line_len > max_length.into() {
+            skipped_lined += 1;
             continue;
         }
 
@@ -117,18 +117,18 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
 
         mask.clear();
         simple_mask.clear();
-        total_lines += 1;
+        processed_lines += 1;
     }
 
-    let num_lines = total_lines - skipped;
-    eprintln!("[+] Analyzed {} / {} passwords.", num_lines, total_lines);
+    let total_lines = processed_lines + skipped_lined;
+    eprintln!("[+] Analyzed {} / {} passwords.", processed_lines, total_lines);
 
     let mut freq_len = Vec::from_iter(length);
     freq_len.sort_by(|&(_, a), &(_, b)| b.cmp(&a));
 
     eprintln!("[*] Length distribution: (min: {} max: {})", min_len, max_len);
     for (len, count) in freq_len {
-        let percent = 100.0 / total_lines as f64 * count as f64;
+        let percent = 100.0 / processed_lines as f64 * count as f64;
         eprintln!("[+] {: >26}: {: >5.2}% ({})", len, percent, count);
     }
 
@@ -137,7 +137,7 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
 
     eprintln!("\n[*] Charset distribution:");
     for (charset, count) in freq_charsets {
-        let percent = 100.0 / total_lines as f64 * count as f64;
+        let percent = 100.0 / processed_lines as f64 * count as f64;
         eprintln!("[+] {: >26}: {: >5.2}% ({})", bitmap2string[charset as usize], percent, count);
     }
 
@@ -146,7 +146,7 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
 
     eprintln!("\n[*] Simple masks distribution:");
     for (simple_mask, count) in freq_simple_masks {
-        let percent = 100.0 / total_lines as f64 * count as f64;
+        let percent = 100.0 / processed_lines as f64 * count as f64;
         let mut print_simple_mask: Vec<&str> = Vec::new();
         for mapped_mask in simple_mask {
             match mapped_mask {
@@ -186,7 +186,7 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
         }
         let out_mask = &print_mask[0..idx*2].to_str().unwrap();
         if top < 25 {
-            let percent = 100.0 / total_lines as f64 * count as f64;
+            let percent = 100.0 / processed_lines as f64 * count as f64;
             eprintln!("[+] {: >26}: {: >5.2}% ({})", out_mask, percent, count);
             top += 1;
         }
