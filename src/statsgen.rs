@@ -185,12 +185,12 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
             idx += 1;
         }
         let out_mask = &print_mask[0..idx*2].to_str().unwrap();
+        let percent = 100.0 / processed_lines as f64 * count as f64;
         if top < 25 {
-            let percent = 100.0 / processed_lines as f64 * count as f64;
             eprintln!("[+] {: >26}: {: >5.2}% ({})", out_mask, percent, count);
             top += 1;
         }
-        let out = &*format!("{}{}{}\n", out_mask, separator, count);
+        let out = &*format!("{}{}{:.4}{}{}\n", out_mask, separator, percent, separator, count);
         io::copy(&mut out.as_bytes(), &mut writer).unwrap();
     }
 }
