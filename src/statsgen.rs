@@ -6,8 +6,7 @@ use std::path::PathBuf;
 use bstr::{ByteSlice, io::BufReadExt};
 use hashbrown::HashMap;
 use faster_hex::hex_decode;
-
-mod common;
+use pack2_util::*;
 
 pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<char>, min_length: u16, max_length: u16) {
 
@@ -94,9 +93,9 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
         let mut skip = false;
 
         for byte in line.iter() {
-            mask.push(common::CHAR2MASK[*byte as usize]);
-            charset |= common::CHAR2BITMAP[*byte as usize];
-            let char_mapped = common::CHAR2SMASK[*byte as usize];
+            mask.push(CHAR2MASK[*byte as usize]);
+            charset |= CHAR2BITMAP[*byte as usize];
+            let char_mapped = CHAR2SMASK[*byte as usize];
             if last == 0 || (last != char_mapped && !skip) {
                 simple_mask.push(char_mapped);
                 last = char_mapped;

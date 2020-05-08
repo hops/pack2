@@ -1,0 +1,10 @@
+[package]
+name = "pack2-util"
+version = "0.1.0"
+authors = ["hops <dev@0x23.ch>"]
+edition = "2018"
+workspace = ".."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
