@@ -4,7 +4,6 @@ use std::path::PathBuf;
 
 use bstr::{ByteSlice, io::BufReadExt};
 use hashbrown::HashMap;
-use faster_hex::hex_decode;
 use pack2_util::*;
 
 pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<char>, min_length: u16, max_length: u16) {
@@ -26,19 +25,7 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
     let mut simple_mask: Vec<u8> = Vec::new();
 
     for result in reader.byte_lines() {
-        let mut line = result.unwrap();
-        let mut line_len = line.len();
-
-        if line.starts_with("$HEX[".as_bytes()) && line.ends_with("]".as_bytes()) {
-            line_len = (line_len - 6) / 2;
-            let mut hex_decoded = vec![0; line_len];
-            let res = hex_decode(&line[5..line.len() - 1], &mut hex_decoded);
-            match res {
-                Ok(_)  => line = hex_decoded,
-                // not valid $HEX encoding, treat as "normal" password
-                Err(_) => line_len = line.len(),
-            }
-        }
+        let (line, line_len) = decode_hex_if_needed(result.unwrap());
 
         if line_len < min_length.into() || line_len > max_length.into() {
             skipped_lined += 1;

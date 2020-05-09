@@ -8,3 +8,4 @@ workspace = ".."
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+faster-hex = { git = "https://github.com/ggriffiniii/faster-hex", branch = "master" }

@@ -2,6 +2,23 @@ use std::io::{self, BufRead, BufReader, Write, BufWriter};
 use std::fs::File;
 use std::path::PathBuf;
 
+use faster_hex::hex_decode;
+
+pub fn decode_hex_if_needed(mut line: Vec<u8>) -> (Vec<u8>, usize) {
+    let mut line_len = line.len();
+    if line.starts_with("$HEX[".as_bytes()) && line.ends_with("]".as_bytes()) {
+        line_len = (line_len - 6) / 2;
+        let mut hex_decoded = vec![0; line_len];
+        let res = hex_decode(&line[5..line.len() - 1], &mut hex_decoded);
+        match res {
+            Ok(_)  => line = hex_decoded,
+            // not valid $HEX encoding, treat as "normal" password
+            Err(_) => line_len = line.len(),
+        }
+    }
+    (line, line_len)
+}
+
 pub fn get_reader(input: Option<PathBuf>) -> Box<dyn BufRead> {
     let reader: Box<dyn BufRead> = match input {
         None => Box::new(BufReader::new(io::stdin())),
