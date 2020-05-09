@@ -1,6 +1,5 @@
-use std::io::{self, BufRead, BufReader, Write, BufWriter};
+use std::io::{self};
 use std::iter::FromIterator;
-use std::fs::File;
 use std::path::PathBuf;
 
 use bstr::{ByteSlice, io::BufReadExt};
@@ -10,45 +9,8 @@ use pack2_util::*;
 
 pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<char>, min_length: u16, max_length: u16) {
 
-    let bitmap2string: Vec<&str> = vec![
-        "invalid",
-        "loweralpha",
-        "upperalpha",
-        "mixedalpha",
-        "numeric",
-        "loweralphanum",
-        "upperalphanum",
-        "mixedalphanum",
-        "special",
-        "loweralphaspecial",
-        "upperalphaspecial",
-        "mixedalphaspecial",
-        "specialnum",
-        "loweralphaspecialnum",
-        "upperalphaspecialnum",
-        "mixedalphaspecialnum",
-        "binary",
-        "loweralphabin",
-        "upperalphabin",
-        "mixedalphabin",
-        "numericbin",
-        "loweralphanumbin",
-        "upperalphanumbin",
-        "mixedalphanumbin",
-        "specialbin",
-        "loweralphaspecialbin",
-        "upperalphaspecialbin",
-        "mixedalphaspecialbin",
-        "specialnumbin",
-        "loweralphaspecialnumbin",
-        "upperalphaspecialnumbin",
-        "mixedalphaspecialnumbin",
-    ];
-
-    let reader: Box<dyn BufRead> = match input {
-        None => Box::new(BufReader::new(io::stdin())),
-        Some(filename) => Box::new(BufReader::new(File::open(filename).unwrap()))
-    };
+    let bitmap2string = get_bitmap2string();
+    let reader = get_reader(input);
 
     let mut masks:        HashMap<Vec<u8>, u32> = HashMap::new();
     let mut simple_masks: HashMap<Vec<u8>, u32> = HashMap::new();
@@ -59,7 +21,6 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
     let mut skipped_lined:   usize = 0;
     let mut min_len:         usize = usize::MAX;
     let mut max_len:         usize = 0;
-
 
     let mut mask: Vec<u8> = Vec::new();
     let mut simple_mask: Vec<u8> = Vec::new();
@@ -167,10 +128,7 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
     let mut top = 0;
     let mut print_mask = vec!['?' as u8; max_len * 2];
 
-    let mut writer: Box<dyn Write> = match output {
-        None => Box::new(BufWriter::new(io::stdout())),
-        Some(filename) => Box::new(BufWriter::new(File::create(filename).unwrap()))
-    };
+    let mut writer = get_writer(output);
 
     let separator: char = match separator {
         None => '\t',

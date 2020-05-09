@@ -1,3 +1,61 @@
+use std::io::{self, BufRead, BufReader, Write, BufWriter};
+use std::fs::File;
+use std::path::PathBuf;
+
+pub fn get_reader(input: Option<PathBuf>) -> Box<dyn BufRead> {
+    let reader: Box<dyn BufRead> = match input {
+        None => Box::new(BufReader::new(io::stdin())),
+        Some(filename) => Box::new(BufReader::new(File::open(filename).unwrap()))
+    };
+    reader
+}
+
+pub fn get_writer(output: Option<PathBuf>) -> Box<dyn Write> {
+    let writer: Box<dyn Write> = match output {
+        None => Box::new(BufWriter::new(io::stdout())),
+        Some(filename) => Box::new(BufWriter::new(File::create(filename).unwrap()))
+    };
+    writer
+}
+
+pub fn get_bitmap2string() -> Vec<&'static str> {
+    let bitmap2string: Vec<&str> = vec![
+        "invalid",
+        "loweralpha",
+        "upperalpha",
+        "mixedalpha",
+        "numeric",
+        "loweralphanum",
+        "upperalphanum",
+        "mixedalphanum",
+        "special",
+        "loweralphaspecial",
+        "upperalphaspecial",
+        "mixedalphaspecial",
+        "specialnum",
+        "loweralphaspecialnum",
+        "upperalphaspecialnum",
+        "mixedalphaspecialnum",
+        "binary",
+        "loweralphabin",
+        "upperalphabin",
+        "mixedalphabin",
+        "numericbin",
+        "loweralphanumbin",
+        "upperalphanumbin",
+        "mixedalphanumbin",
+        "specialbin",
+        "loweralphaspecialbin",
+        "upperalphaspecialbin",
+        "mixedalphaspecialbin",
+        "specialnumbin",
+        "loweralphaspecialnumbin",
+        "upperalphaspecialnumbin",
+        "mixedalphaspecialnumbin",
+    ];
+    bitmap2string
+}
+
 pub const CHAR2MASK: [u8; 256] = [ 
     0x62, 0x62, 0x62, 0x62, 0x62, 0x62, 0x62, 0x62,
     0x62, 0x62, 0x62, 0x62, 0x62, 0x62, 0x62, 0x62,
