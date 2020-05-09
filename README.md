@@ -15,11 +15,8 @@ You need Rust installed. The easiest way to do so is using [rustup](https://rust
 $ cargo build --release
 ```
 Your binary will be located at `target/release/pack2`  
-To squeeze out more compiler optimizations use the following command. This
-will result in a longer compile time in favor of running a bit faster.
-```
-$ RUSTFLAGS="-C opt-level=3 -C target-cpu=native -C codegen-units=1" cargo build --release
-```
+To squeeze out more optimizations we use some flags in the release profile.  
+This results in a longer compile time in favor of running a bit faster.
 
 # usage
 
