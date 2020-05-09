@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use structopt::StructOpt;
 
 mod statsgen;
+mod unhex;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "pack2")]
@@ -24,6 +25,15 @@ pub enum CmdOpts {
         #[structopt(long, default_value="65535", display_order=14)]
         max_length: u16,
     },
+    #[structopt(name = "unhex")]
+    Unhex {
+        /// Input file, stdin if not present
+        #[structopt(parse(from_os_str))]
+        input: Option<PathBuf>,
+        /// Output file, stdout if not present
+        #[structopt(short, long, parse(from_os_str))]
+        output: Option<PathBuf>,
+    }
 }
 
 fn main() {
@@ -31,7 +41,9 @@ fn main() {
     match opt {
         CmdOpts::Statsgen{ input, output, separator, min_length, max_length } => {
             statsgen::gen(input, output, separator, min_length, max_length);
+        },
+        CmdOpts::Unhex{ input, output } => {
+            unhex::unhex(input, output);
         }
     }
-
 }
