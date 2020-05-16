@@ -108,24 +108,24 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
     eprintln!("[*] Length distribution: (min: {} max: {})", min_len, max_len);
     for (len, count) in freq_len {
         let percent = 100.0 / processed_lines as f64 * count as f64;
-        eprintln!("[+] {: >26}: {: >5.2}% ({})", len, percent, count);
+        eprintln!("[+] {: >26}: {: >6.2}% ({})", len, percent, count);
     }
 
     let mut freq_charsets = Vec::from_iter(charsets);
     freq_charsets.sort_by(|&(_, a), &(_, b)| b.cmp(&a));
 
-    eprintln!("\n[*] Charset distribution:                   count   min   max");
+    eprintln!("\n[*] Charset distribution:                    count   min   max");
     for (charset, encoded) in freq_charsets {
         let (count, min_len, max_len) = decode_count_min_max(encoded);
         let percent = 100.0 / processed_lines as f64 * count as f64;
-        eprintln!("[+] {: >26}: {: >5.2}% {: >10} {: >5} {: >5}",
+        eprintln!("[+] {: >26}: {: >6.2}% {: >10} {: >5} {: >5}",
                   bitmap2string[charset as usize], percent, count, min_len, max_len);
     }
 
     let mut freq_simple_masks = Vec::from_iter(simple_masks);
     freq_simple_masks.sort_by(|&(_, a), &(_, b)| b.cmp(&a));
 
-    eprintln!("\n[*] Simple masks distribution:              count   min   max");
+    eprintln!("\n[*] Simple masks distribution:               count   min   max");
     for (simple_mask, encoded) in freq_simple_masks {
         let (count, min_len, max_len) = decode_count_min_max(encoded);
         let percent = 100.0 / processed_lines as f64 * count as f64;
@@ -141,7 +141,7 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
             }
         }
 
-        eprintln!("[+] {: >26}: {: >5.2}% {: >10} {: >5} {: >5}",
+        eprintln!("[+] {: >26}: {: >6.2}% {: >10} {: >5} {: >5}",
                   print_simple_mask.join(""), percent, count, min_len, max_len);
     }
     let mut freq_masks = Vec::from_iter(masks);
@@ -167,7 +167,7 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
         let out_mask = &print_mask[0..idx*2].to_str().unwrap();
         let percent = 100.0 / processed_lines as f64 * count as f64;
         if top < 25 {
-            eprintln!("[+] {: >26}: {: >5.2}% ({})", out_mask, percent, count);
+            eprintln!("[+] {: >26}: {: >6.2}% ({})", out_mask, percent, count);
             top += 1;
         }
         let out = &*format!("{}{}{:.4}{}{}\n", out_mask, separator, percent, separator, count);
