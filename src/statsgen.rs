@@ -6,13 +6,29 @@ use bstr::{ByteSlice, io::BufReadExt};
 use hashbrown::HashMap;
 use pack2_util::*;
 
+#[inline(always)]
+fn encode_count_min_max(count: u32, min: u16, max: u16) -> u64 {
+    let encoded: u64 = (count   as u64) << 32 |
+                       (min     as u64) << 16 |
+                       (max     as u64) <<  0;
+    encoded
+}
+
+#[inline(always)]
+fn decode_count_min_max(encoded: u64) -> (u32, u16, u16) {
+    let count: u32 =  (encoded >> 32) as u32;
+    let min:   u16 = ((encoded >> 16) & 0xffff) as u16;
+    let max:   u16 = ((encoded >>  0) & 0xffff) as u16;
+    (count, min, max)
+}
+
 pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<char>, min_length: u16, max_length: u16) {
 
     let bitmap2string = get_bitmap2string();
     let reader = get_reader(input);
 
     let mut masks:        HashMap<Vec<u8>, u32> = HashMap::new();
-    let mut simple_masks: HashMap<Vec<u8>, u32> = HashMap::new();
+    let mut simple_masks: HashMap<Vec<u8>, u64> = HashMap::new();
     let mut length:       HashMap<u16, u32> = HashMap::new();
     let mut charsets:     HashMap< u8, u32> = HashMap::new();
 
@@ -50,17 +66,23 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
             }
             if simple_mask.len() > 4 {
                 skip = true;
+                simple_mask.clear();
+                simple_mask.push(255);
             }
         }
 
         *masks.entry((&*mask).to_vec()).or_insert(0) += 1;
         *length.entry(line_len as u16).or_insert(0) += 1;
         *charsets.entry(charset).or_insert(0) += 1;
-        if skip  {
-            *simple_masks.entry(vec![255]).or_insert(0) += 1;
-        } else {
-            *simple_masks.entry((&*simple_mask).to_vec()).or_insert(0) += 1;
-        }
+
+        let simple_mask_entry = simple_masks.entry((&*simple_mask).to_vec()).or_insert(0x00000000ffff0000);
+        let (mut simple_count, mut simple_min_len, mut simple_max_len) = decode_count_min_max(*simple_mask_entry);
+
+        simple_count += 1;
+        if simple_min_len as usize > line_len { simple_min_len = line_len as u16 }
+        if line_len > simple_max_len as usize { simple_max_len = line_len as u16 }
+
+        *simple_mask_entry = encode_count_min_max(simple_count, simple_min_len, simple_max_len);
 
         mask.clear();
         simple_mask.clear();
@@ -91,8 +113,9 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
     let mut freq_simple_masks = Vec::from_iter(simple_masks);
     freq_simple_masks.sort_by(|&(_, a), &(_, b)| b.cmp(&a));
 
-    eprintln!("\n[*] Simple masks distribution:");
-    for (simple_mask, count) in freq_simple_masks {
+    eprintln!("\n[*] Simple masks distribution:              count   min   max");
+    for (simple_mask, encoded) in freq_simple_masks {
+        let (count, min_len, max_len) = decode_count_min_max(encoded);
         let percent = 100.0 / processed_lines as f64 * count as f64;
         let mut print_simple_mask: Vec<&str> = Vec::new();
         for mapped_mask in simple_mask {
@@ -106,7 +129,7 @@ pub fn gen(input: Option<PathBuf>, output: Option<PathBuf>, separator: Option<ch
             }
         }
 
-        eprintln!("[+] {: >26}: {: >5.2}% ({})", print_simple_mask.join(""), percent, count);
+        eprintln!("[+] {: >26}: {: >5.2}% {: >10} {: >5} {: >5}", print_simple_mask.join(""), percent, count, min_len, max_len);
     }
     let mut freq_masks = Vec::from_iter(masks);
     freq_masks.sort_by(|&(_, a), &(_, b)| b.cmp(&a));
