@@ -27,7 +27,7 @@ Unless stated otherwise all tools adhere the following rules:
 - Input lines in the $HEX[] format are always decoded before any further processing
 - If at least one character of an output line is outside of \x20 - \x7e it will be encoded in the $HEX[] format
 
-# usagee
+# usage
 ## filtermak
 Filters the input by a given mask, only writing the lines that match the mask.
 ```
