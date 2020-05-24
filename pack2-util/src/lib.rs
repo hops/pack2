@@ -2,7 +2,30 @@ use std::io::{self, BufRead, BufReader, Write, BufWriter};
 use std::fs::File;
 use std::path::PathBuf;
 
-use faster_hex::hex_decode;
+use faster_hex::{hex_decode, hex_encode};
+
+#[inline(always)]
+pub fn contains_nonprintable(line: &Vec<u8>) -> bool {
+    for c in line {
+        if (*c as i8).wrapping_add(1) < 0x21 { return true }
+    }
+    false
+}
+
+// TODO: find a better solution than allocating a new Vector for each call.
+pub fn encode_hex_if_needed(line: Vec<u8>) -> Vec<u8> {
+    if contains_nonprintable(&line) {
+        let mut hex_encoded = vec![0u8; line.len() * 2];
+        hex_encode(&line, &mut hex_encoded).unwrap();
+
+        let mut out:Vec<u8> = Vec::new();
+        out.extend_from_slice("$HEX[".as_bytes());
+        out.extend_from_slice(&hex_encoded.as_slice());
+        out.push(']' as u8);
+        return out
+    }
+    line
+}
 
 pub fn decode_hex_if_needed(mut line: Vec<u8>) -> (Vec<u8>, usize) {
     let mut line_len = line.len();

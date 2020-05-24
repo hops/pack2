@@ -18,6 +18,8 @@ bstr = "0.2.12"
 hashbrown = "0.7.2"
 structopt = "0.3"
 
+faster-hex = { git = "https://github.com/ggriffiniii/faster-hex", branch = "master" }
+
 [profile.release]
 lto = true
 opt-level = 3

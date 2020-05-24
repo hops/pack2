@@ -126,6 +126,7 @@ name = "pack2"
 version = "0.1.0"
 dependencies = [
  "bstr",
+ "faster-hex",
  "hashbrown",
  "pack2-util",
  "structopt",

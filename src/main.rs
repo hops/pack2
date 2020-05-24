@@ -4,6 +4,7 @@ use structopt::StructOpt;
 mod statsgen;
 mod unhex;
 mod filtermask;
+mod cgrams;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "pack2")]
@@ -51,6 +52,19 @@ pub enum CmdOpts {
         /// Output file, stdout if not present
         #[structopt(short, long, parse(from_os_str))]
         output: Option<PathBuf>,
+    },
+    /// Splits each line on the charset boundry
+    #[structopt(name = "cgrams")]
+    Cgrams {
+        /// Input file, stdin if not present
+        #[structopt(parse(from_os_str))]
+        input: Option<PathBuf>,
+        /// Output file, stdout if not present
+        #[structopt(short, long, parse(from_os_str))]
+        output: Option<PathBuf>,
+        /// Sort by frequency (slower and memory hungry)
+        #[structopt(short, long)]
+        sort: bool,
     }
 }
 
@@ -65,6 +79,9 @@ fn main() {
         },
         CmdOpts::Filtermask{ input, output, mask } => {
             filtermask::filtermask(input, output, mask);
+        },
+        CmdOpts::Cgrams{ input, output, sort } => {
+            cgrams::gen_c_grams(input, output, sort);
         }
     }
 }
