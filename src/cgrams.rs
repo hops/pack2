@@ -12,7 +12,7 @@ pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool) 
     let reader     = get_reader(input);
     let mut writer = get_writer(output);
 
-    let mut c_gram   = [0u8; 0xffff];
+    let mut c_gram  = [0u8; 0xffff];
     let mut out_hex = [0u8; 0xffff * 2];
     let mut c_grams: HashMap<Vec<u8>, u64> = HashMap::new();
 
@@ -22,21 +22,21 @@ pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool) 
 
         let mut last_charset: u8 = 0;
         let mut idx: usize = 0;
+        let mut idx_total: usize = 0;
 
         for c in line.iter() {
+            idx_total += 1;
             let cur_charset = CHAR2BITMAP[*c as usize];
             if last_charset == cur_charset {
                 c_gram[idx] = *c;
                 idx += 1;
-                continue
             }
             if last_charset == 0 {
                 c_gram[idx] = *c;
                 idx += 1;
                 last_charset = cur_charset;
-                continue;
             }
-            if last_charset != cur_charset {
+            if last_charset != cur_charset || idx_total == line_len {
                 if sort {
                     *c_grams.entry(c_gram[..idx].to_vec()).or_insert(0) += 1;
                 } else {
@@ -54,24 +54,11 @@ pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool) 
                 idx = 1;
                 last_charset = cur_charset;
             }
-
-        }
-        // TODO: duplicated code, find a better way to contruct the above loop
-        if sort {
-            *c_grams.entry(c_gram[..idx].to_vec()).or_insert(0) += 1;
-        } else {
-            // $HEX[] encoding necessary
-            if last_charset == 16 {
-                let _ = hex_encode(&c_gram[..idx], &mut out_hex);
-                let out = &*format!("$HEX[{}]\n", &out_hex[..idx * 2].to_str().unwrap());
-                io::copy(&mut out.as_bytes(), &mut writer).unwrap();
-            } else {
-                c_gram[idx] = '\n' as u8;
-                io::copy(&mut c_gram[..=idx].as_bytes(), &mut writer).unwrap();
-            }
         }
     }
+
     if sort {
+        let mut out = Vec::new();
         let mut freq_c_grams = Vec::from_iter(c_grams);
         freq_c_grams.sort_by(|&(_, a), &(_, b)| b.cmp(&a));
 
@@ -79,7 +66,7 @@ pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool) 
         let mut top = 0;
 
         for (c_gram, count) in freq_c_grams {
-            let out = encode_hex_if_needed(c_gram);
+            encode_hex_if_needed(c_gram, &mut out);
             if top < 25 {
                 eprintln!("[+] {: >26}: ({})", &out.to_str().unwrap(), count);
                 top += 1;

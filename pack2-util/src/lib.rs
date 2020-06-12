@@ -12,19 +12,19 @@ pub fn contains_nonprintable(line: &Vec<u8>) -> bool {
     false
 }
 
-// TODO: find a better solution than allocating a new Vector for each call.
-pub fn encode_hex_if_needed(line: Vec<u8>) -> Vec<u8> {
+pub fn encode_hex_if_needed(line: Vec<u8>, out: &mut Vec<u8>) {
     if contains_nonprintable(&line) {
         let mut hex_encoded = vec![0u8; line.len() * 2];
         hex_encode(&line, &mut hex_encoded).unwrap();
 
-        let mut out:Vec<u8> = Vec::new();
+        // clear output buffer
+        out.clear();
         out.extend_from_slice("$HEX[".as_bytes());
         out.extend_from_slice(&hex_encoded.as_slice());
         out.push(']' as u8);
-        return out
+    } else {
+    *out = line
     }
-    line
 }
 
 pub fn decode_hex_if_needed(mut line: Vec<u8>) -> (Vec<u8>, usize) {
