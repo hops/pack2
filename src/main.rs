@@ -1,3 +1,4 @@
+use std::process;
 use std::path::PathBuf;
 use structopt::StructOpt;
 
@@ -65,6 +66,12 @@ pub enum CmdOpts {
         /// Sort by frequency (slower and memory hungry)
         #[structopt(short, long)]
         sort: bool,
+        /// Ignores case e.g. "Hello" will _NOT_ be split into "H" and "ello"
+        #[structopt(short, long)]
+        ignore_case: bool,
+        /// Normalizes "Hello" to "hello", both variants will be used
+        #[structopt(short, long)]
+        normalize: bool,
     }
 }
 
@@ -80,8 +87,12 @@ fn main() {
         CmdOpts::Filtermask{ input, output, mask } => {
             filtermask::filtermask(input, output, mask);
         },
-        CmdOpts::Cgrams{ input, output, sort } => {
-            cgrams::gen_c_grams(input, output, sort);
+        CmdOpts::Cgrams{ input, output, sort, ignore_case, normalize } => {
+            if ignore_case == false && normalize == true {
+                eprintln!("--normalize only works together with --ignore-case");
+                process::exit(-1);
+            }
+            cgrams::gen_c_grams(input, output, sort, ignore_case, normalize);
         }
     }
 }

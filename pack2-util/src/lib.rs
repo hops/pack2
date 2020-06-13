@@ -5,6 +5,14 @@ use std::path::PathBuf;
 use faster_hex::{hex_decode, hex_encode};
 
 #[inline(always)]
+pub fn contains_uppercase(line: &Vec<u8>) -> bool {
+    for c in line {
+        if *c >= 0x41 && *c <= 0x5a { return true }
+    }
+    false
+}
+
+#[inline(always)]
 pub fn contains_nonprintable(line: &Vec<u8>) -> bool {
     for c in line {
         if (*c as i8).wrapping_add(1) < 0x21 { return true }

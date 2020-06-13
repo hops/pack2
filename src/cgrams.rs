@@ -7,7 +7,7 @@ use faster_hex::hex_encode;
 use hashbrown::HashMap;
 use pack2_util::*;
 
-pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool) {
+pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool, ignore_case: bool, normalize: bool) {
 
     let reader     = get_reader(input);
     let mut writer = get_writer(output);
@@ -15,6 +15,12 @@ pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool) 
     let mut c_gram  = [0u8; 0xffff];
     let mut out_hex = [0u8; 0xffff * 2];
     let mut c_grams: HashMap<Vec<u8>, u64> = HashMap::new();
+
+    let lookup_table;
+    match ignore_case {
+        false => lookup_table = CHAR2BITMAP,
+        true  => lookup_table = CHAR2SMASK
+    };
 
     for result in reader.byte_lines() {
         let (line, line_len) = decode_hex_if_needed(result.unwrap());
@@ -26,7 +32,8 @@ pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool) 
 
         for c in line.iter() {
             idx_total += 1;
-            let cur_charset = CHAR2BITMAP[*c as usize];
+            let cur_charset = lookup_table[*c as usize];
+
             if last_charset == cur_charset {
                 c_gram[idx] = *c;
                 idx += 1;
@@ -39,6 +46,13 @@ pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool) 
             if last_charset != cur_charset || idx_total == line_len {
                 if sort {
                     *c_grams.entry(c_gram[..idx].to_vec()).or_insert(0) += 1;
+                    if normalize {
+                        let c_gram_vec = c_gram[..idx].to_vec();
+                        if contains_uppercase(&c_gram_vec) {
+                            let lower = c_gram_vec.to_lowercase();
+                            *c_grams.entry(lower).or_insert(0) += 1;
+                        }
+                    }
                 } else {
                     // $HEX[] encoding necessary
                     if last_charset == 16 {
@@ -48,6 +62,13 @@ pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool) 
                     } else {
                         c_gram[idx] = '\n' as u8;
                         io::copy(&mut c_gram[..=idx].as_bytes(), &mut writer).unwrap();
+                        if normalize {
+                            let c_gram_vec = c_gram[..=idx].to_vec();
+                            if contains_uppercase(&c_gram_vec) {
+                                let lower = c_gram_vec.to_lowercase();
+                                io::copy(&mut lower.as_bytes(), &mut writer).unwrap();
+                            }
+                        }
                     }
                 }
                 c_gram[0] = *c;
