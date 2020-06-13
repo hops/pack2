@@ -28,22 +28,22 @@ pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool, 
 
         let mut last_charset: u8 = 0;
         let mut idx: usize = 0;
-        let mut idx_total: usize = 0;
 
         for c in line.iter() {
-            idx_total += 1;
             let cur_charset = lookup_table[*c as usize];
 
             if last_charset == cur_charset {
                 c_gram[idx] = *c;
                 idx += 1;
+                continue;
             }
             if last_charset == 0 {
                 c_gram[idx] = *c;
                 idx += 1;
                 last_charset = cur_charset;
+                continue;
             }
-            if last_charset != cur_charset || idx_total == line_len {
+            if last_charset != cur_charset { // || idx_total == line_len {
                 if sort {
                     *c_grams.entry(c_gram[..idx].to_vec()).or_insert(0) += 1;
                     if normalize {
@@ -74,6 +74,35 @@ pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool, 
                 c_gram[0] = *c;
                 idx = 1;
                 last_charset = cur_charset;
+            }
+        }
+        // TODO: This is really ugly as it's duplicate code form what we have in the above loop.
+        // Either find a better way to construct the loop or move this code into it's own function.
+        if sort {
+            *c_grams.entry(c_gram[..idx].to_vec()).or_insert(0) += 1;
+            if normalize {
+                let c_gram_vec = c_gram[..idx].to_vec();
+                if contains_uppercase(&c_gram_vec) {
+                    let lower = c_gram_vec.to_lowercase();
+                    *c_grams.entry(lower).or_insert(0) += 1;
+                }
+            }
+        } else {
+            // $HEX[] encoding necessary
+            if last_charset == 16 {
+                let _ = hex_encode(&c_gram[..idx], &mut out_hex);
+                let out = &*format!("$HEX[{}]\n", &out_hex[..idx * 2].to_str().unwrap());
+                io::copy(&mut out.as_bytes(), &mut writer).unwrap();
+            } else {
+                c_gram[idx] = '\n' as u8;
+                io::copy(&mut c_gram[..=idx].as_bytes(), &mut writer).unwrap();
+                if normalize {
+                    let c_gram_vec = c_gram[..=idx].to_vec();
+                    if contains_uppercase(&c_gram_vec) {
+                        let lower = c_gram_vec.to_lowercase();
+                        io::copy(&mut lower.as_bytes(), &mut writer).unwrap();
+                    }
+                }
             }
         }
     }
