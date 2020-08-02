@@ -32,7 +32,7 @@ Unless stated otherwise all tools adhere the following rules:
 
 # usage
 ## filtermask
-__Note:__ This will fail horribly in many cases. See #6 for more details.
+__Note:__ This will fail horribly in many cases. See [#6](https://github.com/hops/pack2/issues/6) for more details.  
 Filters the input by a given mask, only writing the lines that match the mask.
 ```
 $ cat input.txt
