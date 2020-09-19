@@ -1,4 +1,3 @@
-use std::io::{self};
 use std::path::PathBuf;
 
 use bstr::{io::BufReadExt, ByteSlice};

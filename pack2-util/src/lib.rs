@@ -1,6 +1,7 @@
 use std::fs::File;
-use std::io::{self, BufRead, BufReader, BufWriter, Write};
+use std::io::{self, BufRead, BufReader, BufWriter, ErrorKind, Write};
 use std::path::PathBuf;
+use std::process;
 
 use faster_hex::{hex_decode, hex_encode};
 

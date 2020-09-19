@@ -1,4 +1,3 @@
-use std::io::{self};
 use std::iter::FromIterator;
 use std::path::PathBuf;
 
