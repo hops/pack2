@@ -78,6 +78,9 @@ pub fn mywrite(data: &mut &[u8], writer: &mut Box<dyn Write>) {
         Err(e) => {
             if e.kind() == ErrorKind::BrokenPipe {
                 process::exit(-1);
+            } else {
+                eprintln!("{}", e);
+                process::exit(-1);
             }
         }
     }
