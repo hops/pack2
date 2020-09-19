@@ -70,6 +70,18 @@ pub fn get_writer(output: Option<PathBuf>) -> Box<dyn Write> {
     writer
 }
 
+#[inline(always)]
+pub fn mywrite(data: &mut &[u8], writer: &mut Box<dyn Write>) {
+    match io::copy(data, writer) {
+        Ok(_) => (),
+        Err(e) => {
+            if e.kind() == ErrorKind::BrokenPipe {
+                process::exit(-1);
+            }
+        }
+    }
+}
+
 pub fn get_bitmap2string() -> Vec<&'static str> {
     let bitmap2string: Vec<&str> = vec![
         "invalid",

@@ -66,15 +66,15 @@ pub fn gen_c_grams(
                     if last_charset == 16 {
                         let _ = hex_encode(&c_gram[..idx], &mut out_hex);
                         let out = &*format!("$HEX[{}]\n", &out_hex[..idx * 2].to_str().unwrap());
-                        io::copy(&mut out.as_bytes(), &mut writer).unwrap();
+                        mywrite(&mut out.as_bytes(), &mut writer);
                     } else {
                         c_gram[idx] = '\n' as u8;
-                        io::copy(&mut c_gram[..=idx].as_bytes(), &mut writer).unwrap();
+                        mywrite(&mut c_gram[..=idx].as_bytes(), &mut writer);
                         if normalize {
                             let c_gram_vec = c_gram[..=idx].to_vec();
                             if contains_uppercase(&c_gram_vec) {
                                 let lower = c_gram_vec.to_lowercase();
-                                io::copy(&mut lower.as_bytes(), &mut writer).unwrap();
+                                mywrite(&mut lower.as_bytes(), &mut writer);
                             }
                         }
                     }
@@ -100,15 +100,15 @@ pub fn gen_c_grams(
             if last_charset == 16 {
                 let _ = hex_encode(&c_gram[..idx], &mut out_hex);
                 let out = &*format!("$HEX[{}]\n", &out_hex[..idx * 2].to_str().unwrap());
-                io::copy(&mut out.as_bytes(), &mut writer).unwrap();
+                mywrite(&mut out.as_bytes(), &mut writer);
             } else {
                 c_gram[idx] = '\n' as u8;
-                io::copy(&mut c_gram[..=idx].as_bytes(), &mut writer).unwrap();
+                mywrite(&mut c_gram[..=idx].as_bytes(), &mut writer);
                 if normalize {
                     let c_gram_vec = c_gram[..=idx].to_vec();
                     if contains_uppercase(&c_gram_vec) {
                         let lower = c_gram_vec.to_lowercase();
-                        io::copy(&mut lower.as_bytes(), &mut writer).unwrap();
+                        mywrite(&mut lower.as_bytes(), &mut writer);
                     }
                 }
             }
@@ -130,7 +130,7 @@ pub fn gen_c_grams(
                 top += 1;
             }
             let out = &*format!("{}\t{}\n", &out.to_str().unwrap(), count);
-            io::copy(&mut out.as_bytes(), &mut writer).unwrap();
+            mywrite(&mut out.as_bytes(), &mut writer);
         }
     }
 }

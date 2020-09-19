@@ -53,7 +53,7 @@ pub fn filtermask(input: Option<PathBuf>, output: Option<PathBuf>, mask: String)
         if matched {
             processed += 1;
             line.push('\n' as u8);
-            io::copy(&mut line.as_bytes(), &mut writer).unwrap();
+            mywrite(&mut line.as_bytes(), &mut writer);
         }
     }
     let total_lines = processed + skipped;

@@ -206,6 +206,6 @@ pub fn gen(
             "{}{}{:.4}{}{}\n",
             out_mask, separator, percent, separator, count
         );
-        io::copy(&mut out.as_bytes(), &mut writer).unwrap();
+        mywrite(&mut out.as_bytes(), &mut writer);
     }
 }
