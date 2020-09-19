@@ -1,11 +1,11 @@
-use std::process;
 use std::path::PathBuf;
+use std::process;
 use structopt::StructOpt;
 
+mod cgrams;
+mod filtermask;
 mod statsgen;
 mod unhex;
-mod filtermask;
-mod cgrams;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "pack2")]
@@ -18,16 +18,16 @@ pub enum CmdOpts {
         #[structopt(parse(from_os_str))]
         input: Option<PathBuf>,
         /// Output file, stdout if not present
-        #[structopt(short, long, parse(from_os_str), display_order=1)]
+        #[structopt(short, long, parse(from_os_str), display_order = 1)]
         output: Option<PathBuf>,
         /// Separator used in mask output [default: TAB]
-        #[structopt(short, long, display_order=2)]
+        #[structopt(short, long, display_order = 2)]
         separator: Option<char>,
         /// Ignore passwords shorter than <min-length>
-        #[structopt(long, default_value="1", display_order=13)]
+        #[structopt(long, default_value = "1", display_order = 13)]
         min_length: u16,
         /// Ignore passwords longer than <max-length>
-        #[structopt(long, default_value="65535", display_order=14)]
+        #[structopt(long, default_value = "65535", display_order = 14)]
         max_length: u16,
     },
 
@@ -72,22 +72,38 @@ pub enum CmdOpts {
         /// Normalizes "Hello" to "hello", both variants will be used
         #[structopt(short, long)]
         normalize: bool,
-    }
+    },
 }
 
 fn main() {
     let opt = CmdOpts::from_args();
     match opt {
-        CmdOpts::Statsgen{ input, output, separator, min_length, max_length } => {
+        CmdOpts::Statsgen {
+            input,
+            output,
+            separator,
+            min_length,
+            max_length,
+        } => {
             statsgen::gen(input, output, separator, min_length, max_length);
-        },
-        CmdOpts::Unhex{ input, output } => {
+        }
+        CmdOpts::Unhex { input, output } => {
             unhex::unhex(input, output);
-        },
-        CmdOpts::Filtermask{ input, output, mask } => {
+        }
+        CmdOpts::Filtermask {
+            input,
+            output,
+            mask,
+        } => {
             filtermask::filtermask(input, output, mask);
-        },
-        CmdOpts::Cgrams{ input, output, sort, ignore_case, normalize } => {
+        }
+        CmdOpts::Cgrams {
+            input,
+            output,
+            sort,
+            ignore_case,
+            normalize,
+        } => {
             if ignore_case == false && normalize == true {
                 eprintln!("--normalize only works together with --ignore-case");
                 process::exit(-1);

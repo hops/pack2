@@ -2,29 +2,36 @@ use std::io::{self};
 use std::iter::FromIterator;
 use std::path::PathBuf;
 
-use bstr::{ByteSlice, io::BufReadExt};
+use bstr::{io::BufReadExt, ByteSlice};
 use faster_hex::hex_encode;
 use hashbrown::HashMap;
 use pack2_util::*;
 
-pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool, ignore_case: bool, normalize: bool) {
-
-    let reader     = get_reader(input);
+pub fn gen_c_grams(
+    input: Option<PathBuf>,
+    output: Option<PathBuf>,
+    sort: bool,
+    ignore_case: bool,
+    normalize: bool,
+) {
+    let reader = get_reader(input);
     let mut writer = get_writer(output);
 
-    let mut c_gram  = [0u8; 0xffff];
+    let mut c_gram = [0u8; 0xffff];
     let mut out_hex = [0u8; 0xffff * 2];
     let mut c_grams: HashMap<Vec<u8>, u64> = HashMap::new();
 
     let lookup_table;
     match ignore_case {
         false => lookup_table = CHAR2BITMAP,
-        true  => lookup_table = CHAR2SMASK
+        true => lookup_table = CHAR2SMASK,
     };
 
     for result in reader.byte_lines() {
         let (line, line_len) = decode_hex_if_needed(result.unwrap());
-        if line_len > u16::MAX.into() || line_len ==  0 { continue; }
+        if line_len > u16::MAX.into() || line_len == 0 {
+            continue;
+        }
 
         let mut last_charset: u8 = 0;
         let mut idx: usize = 0;
@@ -43,7 +50,8 @@ pub fn gen_c_grams(input: Option<PathBuf>, output: Option<PathBuf>, sort: bool, 
                 last_charset = cur_charset;
                 continue;
             }
-            if last_charset != cur_charset { // || idx_total == line_len {
+            if last_charset != cur_charset {
+                // || idx_total == line_len {
                 if sort {
                     *c_grams.entry(c_gram[..idx].to_vec()).or_insert(0) += 1;
                     if normalize {
