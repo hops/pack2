@@ -9,7 +9,7 @@ const DEFAULT_ENCODED: u64 = 0x00000000ffff0000;
 
 #[inline(always)]
 fn encode_count_min_max(count: u32, min: u16, max: u16) -> u64 {
-    let encoded: u64 = (count as u64) << 32 | (min as u64) << 16 | (max as u64) << 0;
+    let encoded: u64 = (count as u64) << 32 | (min as u64) << 16 | (max as u64);
     encoded
 }
 
@@ -17,7 +17,7 @@ fn encode_count_min_max(count: u32, min: u16, max: u16) -> u64 {
 fn decode_count_min_max(encoded: u64) -> (u32, u16, u16) {
     let count: u32 = (encoded >> 32) as u32;
     let min: u16 = ((encoded >> 16) & 0xffff) as u16;
-    let max: u16 = ((encoded >> 0) & 0xffff) as u16;
+    let max: u16 = (encoded & 0xffff) as u16;
     (count, min, max)
 }
 
@@ -180,7 +180,7 @@ pub fn gen(
 
     eprintln!("\n[*] Masks (top 25):");
     let mut top = 0;
-    let mut print_mask = vec!['?' as u8; max_len * 2];
+    let mut print_mask = vec![b'?'; max_len * 2];
 
     let mut writer = get_writer(output);
 

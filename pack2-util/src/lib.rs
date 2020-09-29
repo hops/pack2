@@ -6,7 +6,7 @@ use std::process;
 use faster_hex::{hex_decode, hex_encode};
 
 #[inline(always)]
-pub fn contains_uppercase(line: &Vec<u8>) -> bool {
+pub fn contains_uppercase(line: &[u8]) -> bool {
     for c in line {
         if *c >= 0x41 && *c <= 0x5a {
             return true;
@@ -16,7 +16,7 @@ pub fn contains_uppercase(line: &Vec<u8>) -> bool {
 }
 
 #[inline(always)]
-pub fn contains_nonprintable(line: &Vec<u8>) -> bool {
+pub fn contains_nonprintable(line: &[u8]) -> bool {
     for c in line {
         if (*c as i8).wrapping_add(1) < 0x21 {
             return true;
@@ -32,9 +32,9 @@ pub fn encode_hex_if_needed(line: Vec<u8>, out: &mut Vec<u8>) {
 
         // clear output buffer
         out.clear();
-        out.extend_from_slice("$HEX[".as_bytes());
+        out.extend_from_slice(b"$HEX[");
         out.extend_from_slice(&hex_encoded.as_slice());
-        out.push(']' as u8);
+        out.push(b']');
     } else {
         *out = line
     }
@@ -42,7 +42,7 @@ pub fn encode_hex_if_needed(line: Vec<u8>, out: &mut Vec<u8>) {
 
 pub fn decode_hex_if_needed(mut line: Vec<u8>) -> (Vec<u8>, usize) {
     let mut line_len = line.len();
-    if line.starts_with("$HEX[".as_bytes()) && line.ends_with("]".as_bytes()) {
+    if line.starts_with(b"$HEX[") && line.ends_with(b"]") {
         line_len = (line_len - 6) / 2;
         let mut hex_decoded = vec![0; line_len];
         let res = hex_decode(&line[5..line.len() - 1], &mut hex_decoded);

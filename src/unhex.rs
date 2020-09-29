@@ -9,7 +9,7 @@ pub fn unhex(input: Option<PathBuf>, output: Option<PathBuf>) {
 
     for result in reader.byte_lines() {
         let (mut line, _line_len) = decode_hex_if_needed(result.unwrap());
-        line.push('\n' as u8);
+        line.push(b'\n');
         mywrite(&mut line.as_bytes(), &mut writer);
     }
 }

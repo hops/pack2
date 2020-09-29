@@ -40,18 +40,16 @@ pub fn filtermask(input: Option<PathBuf>, output: Option<PathBuf>, mask: String)
         }
 
         let mut matched = true;
-        let mut idx = 0;
-        for byte in line.iter() {
+        for (idx, byte) in line.iter().enumerate() {
             if filter[idx] & CHAR2BITMAP[*byte as usize] == 0 {
                 matched = false;
                 break;
             }
-            idx += 1;
         }
 
         if matched {
             processed += 1;
-            line.push('\n' as u8);
+            line.push(b'\n');
             mywrite(&mut line.as_bytes(), &mut writer);
         }
     }

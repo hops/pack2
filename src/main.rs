@@ -104,7 +104,7 @@ fn main() {
             ignore_case,
             normalize,
         } => {
-            if ignore_case == false && normalize == true {
+            if !ignore_case && normalize {
                 eprintln!("--normalize only works together with --ignore-case");
                 process::exit(-1);
             }

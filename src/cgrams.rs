@@ -67,7 +67,7 @@ pub fn gen_c_grams(
                         let out = &*format!("$HEX[{}]\n", &out_hex[..idx * 2].to_str().unwrap());
                         mywrite(&mut out.as_bytes(), &mut writer);
                     } else {
-                        c_gram[idx] = '\n' as u8;
+                        c_gram[idx] = b'\n';
                         mywrite(&mut c_gram[..=idx].as_bytes(), &mut writer);
                         if normalize {
                             let c_gram_vec = c_gram[..=idx].to_vec();
@@ -101,7 +101,7 @@ pub fn gen_c_grams(
                 let out = &*format!("$HEX[{}]\n", &out_hex[..idx * 2].to_str().unwrap());
                 mywrite(&mut out.as_bytes(), &mut writer);
             } else {
-                c_gram[idx] = '\n' as u8;
+                c_gram[idx] = b'\n';
                 mywrite(&mut c_gram[..=idx].as_bytes(), &mut writer);
                 if normalize {
                     let c_gram_vec = c_gram[..=idx].to_vec();
